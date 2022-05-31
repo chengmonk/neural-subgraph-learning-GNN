@@ -23,7 +23,8 @@ import torch.nn as nn
 import torch.multiprocessing as mp
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
+from tensorboardX import SummaryWriter
 from torch_geometric.data import DataLoader
 from torch_geometric.datasets import TUDataset
 import torch_geometric.utils as pyg_utils

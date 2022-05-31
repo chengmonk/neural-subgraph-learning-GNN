@@ -16,7 +16,15 @@ from tqdm import tqdm
 from common import feature_preprocess
 
 def sample_neigh(graphs, size):
+    """
+    Args:
+        graphs:
+        size:
 
+    Returns:
+        graph:
+        neigh:
+    """
     ps = np.array([len(g) for g in graphs], dtype=np.float)
     ps /= np.sum(ps)
     dist = stats.rv_discrete(values=(np.arange(len(graphs)), ps))
@@ -227,7 +235,7 @@ def batch_nx_graphs(graphs, anchors=None):
     #loader = DataLoader(motifs_batch, batch_size=len(motifs_batch))
     #for b in loader: batch = b
     augmenter = feature_preprocess.FeatureAugment()
-    
+
     if anchors is not None:
         for anchor, g in zip(anchors, graphs):
             for v in g.nodes:
