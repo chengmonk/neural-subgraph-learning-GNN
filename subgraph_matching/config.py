@@ -44,7 +44,7 @@ def parse_encoder(parser, arg_str=None):
 
     enc_parser.set_defaults(conv_type='SAGE',
                         method_type='order',
-                        dataset='syn',
+                        dataset='syn',#syn  enzymes
                         n_layers=8,
                         batch_size=64,
                         hidden_dim=64,
@@ -59,7 +59,7 @@ def parse_encoder(parser, arg_str=None):
                         margin=0.1,
                         test_set='',
                         eval_interval=1000,
-                        n_workers=-1, # 出现pickle错误的时候 将workers改为0即可
+                        n_workers=2, # 出现pickle错误的时候 将workers改为0即可
                         model_path="ckpt/model.pt",
                         tag='',
                         val_size=4096,

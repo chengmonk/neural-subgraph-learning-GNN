@@ -178,7 +178,7 @@ def train_loop(args):
             in_queue, out_queue))
         worker.start()
         workers.append(worker)
-
+    # train(args, model, data_source, in_queue, out_queue)
     if args.test:
         validation(args, model, test_pts, logger, 0, 0, verbose=True)
     else:
