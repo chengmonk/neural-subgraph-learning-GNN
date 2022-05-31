@@ -16,6 +16,7 @@ from tqdm import tqdm
 from common import feature_preprocess
 
 def sample_neigh(graphs, size):
+
     ps = np.array([len(g) for g in graphs], dtype=np.float)
     ps /= np.sum(ps)
     dist = stats.rv_discrete(values=(np.arange(len(graphs)), ps))
