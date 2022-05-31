@@ -202,29 +202,12 @@ def train_loop(args):
     for worker in workers:
         worker.join()
 
-def main(force_test=False):
-    mp.set_start_method("spawn", force=True)
-    parser = (argparse.ArgumentParser(description='Order embedding arguments')
-        if not HYPERPARAM_SEARCH else
-        HyperOptArgumentParser(strategy='grid_search'))
 
-    utils.parse_optimizer(parser)
-    parse_encoder(parser)
-    args = parser.parse_args()
 
-    if force_test:
-        args.test = True
+parser = (argparse.ArgumentParser(description='Order embedding arguments')
+    if not HYPERPARAM_SEARCH else
+    HyperOptArgumentParser(strategy='grid_search'))
 
-    # Currently due to parallelism in multi-gpu training, this code performs
-    # sequential hyperparameter tuning.
-    # All gpus are used for every run of training in hyperparameter search.
-    if HYPERPARAM_SEARCH:
-        for i, hparam_trial in enumerate(args.trials(HYPERPARAM_SEARCH_N_TRIALS)):
-            print("Running hyperparameter search trial", i)
-            print(hparam_trial)
-            train_loop(hparam_trial)
-    else:
-        train_loop(args)
-
-if __name__ == '__main__':
-    main()
+utils.parse_optimizer(parser)
+parse_encoder(parser)
+args = parser.parse_args()

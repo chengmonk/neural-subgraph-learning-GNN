@@ -187,7 +187,7 @@ def get_device():
     if device_cache is None:
         device_cache = torch.device("cuda") if torch.cuda.is_available() \
             else torch.device("cpu")
-        #device_cache = torch.device("cpu")
+        device_cache = torch.device("cpu")
     return device_cache
 
 def parse_optimizer(parser):

@@ -58,6 +58,7 @@ def parse_encoder(parser, arg_str=None):
                         lr=1e-4,
                         margin=0.1,
                         test_set='',
+                        # test=,
                         eval_interval=1000,
                         n_workers=2, # 出现pickle错误的时候 将workers改为0即可
                         model_path="ckpt/model.pt",
