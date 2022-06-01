@@ -21,6 +21,8 @@ from tqdm import tqdm
 import queue
 import scipy.stats as stats
 
+
+
 from common import combined_syn
 from common import feature_preprocess
 from common import utils
@@ -265,6 +267,7 @@ class OTFSynImbalancedDataSource(OTFSynDataSource):
         return pos_a, pos_b, neg_a, neg_b
 
 class DiskDataSource(DataSource):
+    #我们要使用的方式就是这种。我们提前会有保存在硬盘中的数据集，然后通过deepsnap进行枚举出来。
     """ Uses a set of graphs saved in a dataset file to train the subgraph model.
 
     At every iteration, new batch of graphs (positive and negative) are generated

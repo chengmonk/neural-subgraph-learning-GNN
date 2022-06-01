@@ -29,7 +29,7 @@ from torch_geometric.data import DataLoader
 from torch_geometric.datasets import TUDataset
 import torch_geometric.utils as pyg_utils
 import torch_geometric.nn as pyg_nn
-
+from common.data import *
 from common import data
 from common import models
 from common import utils
@@ -89,8 +89,14 @@ def train(args, model, logger, in_queue, out_queue):
     done = False
     while not done:
         data_source = make_data_source(args)
-        loaders = data_source.gen_data_loaders(args.eval_interval *
-            args.batch_size, args.batch_size, train=True)
+        loaders = data_source.gen_data_loaders(args.eval_interval * args.batch_size, args.batch_size, train=True)
+        count=0
+        for batch_target, batch_neg_target, batch_neg_query in zip(*loaders):
+            count+=1
+            print(count)
+
+        # zip
+        a=[1,2,3]
         for batch_target, batch_neg_target, batch_neg_query in zip(*loaders):
             msg, _ = in_queue.get()
             if msg == "done":
@@ -99,8 +105,7 @@ def train(args, model, logger, in_queue, out_queue):
             # train
             model.train()
             model.zero_grad()
-            pos_a, pos_b, neg_a, neg_b = data_source.gen_batch(batch_target,
-                batch_neg_target, batch_neg_query, True)
+            pos_a, pos_b, neg_a, neg_b = data_source.gen_batch(batch_target,batch_neg_target, batch_neg_query, True)
             emb_pos_a, emb_pos_b = model.emb_model(pos_a), model.emb_model(pos_b)
             emb_neg_a, emb_neg_b = model.emb_model(neg_a), model.emb_model(neg_b)
             #print(emb_pos_a.shape, emb_neg_a.shape, emb_neg_b.shape)

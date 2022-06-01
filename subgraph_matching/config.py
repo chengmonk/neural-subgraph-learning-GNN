@@ -44,7 +44,7 @@ def parse_encoder(parser, arg_str=None):
 
     enc_parser.set_defaults(conv_type='SAGE',
                         method_type='order',
-                        dataset='syn',#syn  enzymes
+                        dataset='enzymes',#syn  enzymes
                         n_layers=8,
                         batch_size=64,
                         hidden_dim=64,
