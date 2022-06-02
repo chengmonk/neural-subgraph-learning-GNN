@@ -83,7 +83,9 @@ def train(args, model, logger, in_queue, out_queue):
     out_queue: output queue to an intersection computation worker
     """
     scheduler, opt = utils.build_optimizer(args, model.parameters())
+    # 配置嵌入网络模型的优化器
     if args.method_type == "order":
+        # 配置
         clf_opt = optim.Adam(model.clf_model.parameters(), lr=args.lr)
 
     done = False
@@ -92,11 +94,15 @@ def train(args, model, logger, in_queue, out_queue):
         loaders = data_source.gen_data_loaders(args.eval_interval * args.batch_size, args.batch_size, train=True)
         count=0
         for batch_target, batch_neg_target, batch_neg_query in zip(*loaders):
-            count+=1
-            print(count)
+            print("*"*20)
+            print("batch_target:", batch_target)
+            print("batch_neg_target:", batch_neg_target)
+            print("batch_neg_query:", batch_neg_query)
+
 
         # zip
         a=[1,2,3]
+
         for batch_target, batch_neg_target, batch_neg_query in zip(*loaders):
             msg, _ = in_queue.get()
             if msg == "done":
@@ -106,6 +112,7 @@ def train(args, model, logger, in_queue, out_queue):
             model.train()
             model.zero_grad()
             pos_a, pos_b, neg_a, neg_b = data_source.gen_batch(batch_target,batch_neg_target, batch_neg_query, True)
+            # emb_pos_a= model.emb_model(pos_a)
             emb_pos_a, emb_pos_b = model.emb_model(pos_a), model.emb_model(pos_b)
             emb_neg_a, emb_neg_b = model.emb_model(neg_a), model.emb_model(neg_b)
             #print(emb_pos_a.shape, emb_neg_a.shape, emb_neg_b.shape)

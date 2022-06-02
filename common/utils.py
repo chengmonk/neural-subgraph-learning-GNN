@@ -17,6 +17,7 @@ from common import feature_preprocess
 
 def sample_neigh(graphs, size):
     """
+    用于枚举k-hop的邻居
     Args:
         graphs:
         size:

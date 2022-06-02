@@ -156,6 +156,14 @@ class SkipLastGNN(nn.Module):
             print("unrecognized model type")
 
     def forward(self, data):
+        """
+
+        Args:
+            data:  graph
+
+        Returns:
+
+        """
         #if data.x is None:
         #    data.x = torch.ones((data.num_nodes, 1), device=utils.get_device())
 
