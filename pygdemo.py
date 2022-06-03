@@ -29,3 +29,8 @@ options = {
 nx.draw(subg, **options)
 plt.show()
 
+demog=nx.DiGraph()
+demog.add_edge(1,2)
+demog.add_edge(1,3)
+demog.add_edge(2,3)
+demog.add_edge(3,4)

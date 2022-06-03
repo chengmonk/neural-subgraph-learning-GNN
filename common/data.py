@@ -312,6 +312,8 @@ class DiskDataSource(DataSource):
             filter_negs:
             sample_method:
                 tree-pair 和 subgraph-tree 二者的分别代表什么采样方式？
+                tree-pair 首先枚举出一个限定大小的tree， 然后 抽取出这个tree的subgraph用作训练
+                subgraph-tree  直接将一个原始graph用作target graph  然后随机枚举出一个subgraph用作训练
         Returns:
             pos_a:
             pos_b:
@@ -330,7 +332,7 @@ class DiskDataSource(DataSource):
             if sample_method == "tree-pair":
                 size = random.randint(min_size + 1, max_size)
                 graph, a = utils.sample_neigh(graphs, size)
-                b = a[:random.randint(min_size, len(a) - 1)]
+                b = a[:random.randint(min_size, len(a) - 1)] # 从邻居中任选一些  b 是a的子图  subgraph
             elif sample_method == "subgraph-tree":
                 graph = None
                 while graph is None or len(graph) < min_size + 1:

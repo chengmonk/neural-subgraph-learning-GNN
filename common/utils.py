@@ -19,21 +19,26 @@ def sample_neigh(graphs, size):
     """
     用于枚举k-hop的邻居
     Args:
-        graphs:
-        size:
+        graphs: 图的集合
+        size: 枚举出k-hop 节点的 数量
 
     Returns:
-        graph:
-        neigh:
+        graph: 符合size的graph
+        neigh: 以graph其中一个节点为start node枚举出的邻居节点
     """
     ps = np.array([len(g) for g in graphs], dtype=np.float)
-    ps /= np.sum(ps)
+    ps /= np.sum(ps) # 这么做的目的是什么呢？ 似乎是计算出所有节点的和然后  估计每个子图包含节点数量占整个的比例 为了均匀分布，  随机抽样？
+
+    # len(g)  得到的是g中节点的个数
+    # values： 两个 数组 的元组，可选
+    # (xk, pk) 其中 xk 是整数， pk 是 sum(pk) = 1 的 0 和 1 之间的非零概率。 xk 和pk 必须具有相同的形状。
+    # rv_discrete 为离散随机变量构建特定分布， 此处是基于 每个graph中节点数量占所有节点数量的百分比作为该graph的对应概率
     dist = stats.rv_discrete(values=(np.arange(len(graphs)), ps))
     while True:
-        idx = dist.rvs()
+        idx = dist.rvs() # 随机抽样出一个graph的索引
         #graph = random.choice(graphs)
         graph = graphs[idx]
-        start_node = random.choice(list(graph.nodes))
+        start_node = random.choice(list(graph.nodes)) # 随机选定一个开始的节点
         neigh = [start_node]
         frontier = list(set(graph.neighbors(start_node)) - set(neigh))
         visited = set([start_node])
@@ -231,6 +236,14 @@ def build_optimizer(args, params):
     return scheduler, optimizer
 
 def batch_nx_graphs(graphs, anchors=None):
+    """
+    Args:
+        graphs:
+        anchors:
+
+    Returns:
+
+    """
     #motifs_batch = [pyg_utils.from_networkx(
     #    nx.convert_node_labels_to_integers(graph)) for graph in graphs]
     #loader = DataLoader(motifs_batch, batch_size=len(motifs_batch))

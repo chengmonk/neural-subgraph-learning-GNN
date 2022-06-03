@@ -73,12 +73,30 @@ class FeatureAugment(nn.Module):
         super(FeatureAugment, self).__init__()
 
         def degree_fun(graph, feature_dim):
+            """
+
+            Args:
+                graph:
+                feature_dim:
+
+            Returns:
+
+            """
             graph.node_degree = self._one_hot_tensor(
                 [d for _, d in graph.G.degree()],
                 one_hot_dim=feature_dim)
             return graph
 
         def centrality_fun(graph, feature_dim):
+            """
+
+            Args:
+                graph:
+                feature_dim:
+
+            Returns:
+
+            """
             nodes = list(graph.G.nodes)
             centrality = nx.betweenness_centrality(graph.G)
             graph.betweenness_centrality = torch.tensor(
@@ -87,6 +105,15 @@ class FeatureAugment(nn.Module):
             return graph
 
         def path_len_fun(graph, feature_dim):
+            """
+
+            Args:
+                graph:
+                feature_dim:
+
+            Returns:
+
+            """
             nodes = list(graph.G.nodes)
             graph.path_len = self._one_hot_tensor(
                 [np.mean(list(nx.shortest_path_length(graph.G,
@@ -95,6 +122,15 @@ class FeatureAugment(nn.Module):
             return graph
 
         def pagerank_fun(graph, feature_dim):
+            """
+
+            Args:
+                graph:
+                feature_dim:
+
+            Returns:
+
+            """
             nodes = list(graph.G.nodes)
             pagerank = nx.pagerank(graph.G)
             graph.pagerank = torch.tensor([pagerank[x] for x in
@@ -102,11 +138,29 @@ class FeatureAugment(nn.Module):
             return graph
 
         def identity_fun(graph, feature_dim):
+            """
+
+            Args:
+                graph:
+                feature_dim:
+
+            Returns:
+
+            """
             graph.identity = compute_identity(
                 graph.edge_index, graph.num_nodes, feature_dim)
             return graph
 
         def clustering_coefficient_fun(graph, feature_dim):
+            """
+
+            Args:
+                graph:
+                feature_dim:
+
+            Returns:
+
+            """
             node_cc = list(nx.clustering(graph.G).values())
             if feature_dim == 1:
                 graph.node_clustering_coefficient = torch.tensor(
@@ -116,6 +170,15 @@ class FeatureAugment(nn.Module):
                         node_cc, feature_dim=feature_dim)
 
         def motif_counts_fun(graph, feature_dim):
+            """
+
+            Args:
+                graph:
+                feature_dim:
+
+            Returns:
+
+            """
             assert feature_dim % 73 == 0
             counts = orca.orbit_counts("node", 5, graph.G)
             counts = [[np.log(c) if c > 0 else -1.0 for c in l] for l in counts]
@@ -126,6 +189,15 @@ class FeatureAugment(nn.Module):
             return graph
 
         def node_features_base_fun(graph, feature_dim):
+            """
+
+            Args:
+                graph:
+                feature_dim:
+
+            Returns:
+
+            """
             for v in graph.G.nodes:
                 if "node_feature" not in graph.G.nodes[v]:
                     graph.G.nodes[v]["node_feature"] = torch.ones(feature_dim)
@@ -142,6 +214,14 @@ class FeatureAugment(nn.Module):
             "identity": identity_fun}
 
     def register_feature_fun(name, feature_fun):
+        """
+
+        Args:
+            feature_fun:
+
+        Returns:
+
+        """
         self.node_feature_funs[name] = feature_fun
 
     @staticmethod
