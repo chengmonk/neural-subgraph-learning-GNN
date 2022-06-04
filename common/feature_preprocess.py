@@ -264,6 +264,14 @@ class FeatureAugment(nn.Module):
         return one_hot
 
     def augment(self, dataset):
+        """
+
+        Args:
+            dataset:
+
+        Returns:
+
+        """
         dataset = dataset.apply_transform(self.node_features_base_fun,
             feature_dim=1)
         for key, dim in zip(FEATURE_AUGMENT, FEATURE_AUGMENT_DIMS):

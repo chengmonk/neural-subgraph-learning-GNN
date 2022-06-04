@@ -364,6 +364,7 @@ class DiskDataSource(DataSource):
                 graph_b, b = utils.sample_neigh(graphs, random.randint(min_size,
                                                                        len(graph_a) - 1))
             if self.node_anchored:
+                # 这里添加anchors的目的是什么？   而且anchor应该是是a[0] 而不是list(graph_a.nodes)[0]
                 neg_a_anchors.append(list(graph_a.nodes)[0])
                 neg_b_anchors.append(list(graph_b.nodes)[0])
             neigh_a, neigh_b = graph_a.subgraph(a), graph_b.subgraph(b)
