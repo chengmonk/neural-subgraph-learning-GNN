@@ -171,10 +171,10 @@ def train_loop(args):
     model = build_model(args)
     model.share_memory()
 
-    if args.method_type == "order":
-        clf_opt = optim.Adam(model.clf_model.parameters(), lr=args.lr)
-    else:
-        clf_opt = None
+    # if args.method_type == "order":
+    #     clf_opt = optim.Adam(model.clf_model.parameters(), lr=args.lr)
+    # else:
+    #     clf_opt = None
 
     data_source = make_data_source(args)
     loaders = data_source.gen_data_loaders(args.val_size, args.batch_size,

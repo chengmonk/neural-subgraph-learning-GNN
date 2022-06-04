@@ -74,7 +74,7 @@ def make_data_source(args):
             raise Exception("Error: unrecognized dataset")
     return data_source
 
-def train(args, model, logger, in_queue, out_queue):
+def train(args, model):
     """Train the order embedding model.
 
     args: Commandline arguments
@@ -92,10 +92,10 @@ def train(args, model, logger, in_queue, out_queue):
         loaders = data_source.gen_data_loaders(args.eval_interval *
             args.batch_size, args.batch_size, train=True)
         for batch_target, batch_neg_target, batch_neg_query in zip(*loaders):
-            msg, _ = in_queue.get()
-            if msg == "done":
-                done = True
-                break
+            # msg, _ = in_queue.get()
+            # if msg == "done":
+            #     done = True
+            #     break
             # train
             model.train()
             model.zero_grad()
@@ -130,8 +130,9 @@ def train(args, model, logger, in_queue, out_queue):
             acc = torch.mean((pred == labels).type(torch.float))
             train_loss = loss.item()
             train_acc = acc.item()
+    return train_loss, train_acc
 
-            out_queue.put(("step", (loss.item(), acc)))
+            # out_queue.put(("step", (loss.item(), acc)))
 
 def train_loop(args):
     if not os.path.exists(os.path.dirname(args.model_path)):
@@ -153,10 +154,10 @@ def train_loop(args):
     model = build_model(args)
     model.share_memory()
 
-    if args.method_type == "order":
-        clf_opt = optim.Adam(model.clf_model.parameters(), lr=args.lr)
-    else:
-        clf_opt = None
+    # if args.method_type == "order":
+    #     clf_opt = optim.Adam(model.clf_model.parameters(), lr=args.lr)
+    # else:
+    #     clf_opt = None
 
     data_source = make_data_source(args)
     loaders = data_source.gen_data_loaders(args.val_size, args.batch_size,
@@ -176,6 +177,7 @@ def train_loop(args):
     for i in range(args.n_workers):
         worker = mp.Process(target=train, args=(args, model, data_source,
             in_queue, out_queue))
+        train(args, model, data_source, in_queue, out_queue)
         worker.start()
         workers.append(worker)
     # train(args, model, data_source, in_queue, out_queue)
@@ -224,7 +226,9 @@ def main(force_test=False):
             print(hparam_trial)
             train_loop(hparam_trial)
     else:
-        train_loop(args)
+        # train_loop(args)
+        model = build_model(args)
+        train(args, model)
 
 if __name__ == '__main__':
     main()
