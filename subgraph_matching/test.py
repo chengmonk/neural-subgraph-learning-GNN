@@ -9,7 +9,7 @@ import numpy as np
 USE_ORCA_FEATS = False # whether to use orca motif counts along with embeddings
 MAX_MARGIN_SCORE = 1e9 # a very large margin score to given orca constraints
 
-def validation(args, model, test_pts, logger, batch_n, epoch, verbose=False):
+def validation(args, model, test_pts, logger=None, batch_n=None, epoch=None, verbose=False):
     # test on new motifs
     model.eval()
     all_raw_preds, all_preds, all_labels = [], [], []
@@ -97,15 +97,15 @@ def validation(args, model, test_pts, logger, batch_n, epoch, verbose=False):
             tn, fp, fn, tp))
 
     if not args.test:
-        logger.add_scalar("Accuracy/test", acc, batch_n)
-        logger.add_scalar("Precision/test", prec, batch_n)
-        logger.add_scalar("Recall/test", recall, batch_n)
-        logger.add_scalar("AUROC/test", auroc, batch_n)
-        logger.add_scalar("AvgPrec/test", avg_prec, batch_n)
-        logger.add_scalar("TP/test", tp, batch_n)
-        logger.add_scalar("TN/test", tn, batch_n)
-        logger.add_scalar("FP/test", fp, batch_n)
-        logger.add_scalar("FN/test", fn, batch_n)
+        # logger.add_scalar("Accuracy/test", acc, batch_n)
+        # logger.add_scalar("Precision/test", prec, batch_n)
+        # logger.add_scalar("Recall/test", recall, batch_n)
+        # logger.add_scalar("AUROC/test", auroc, batch_n)
+        # logger.add_scalar("AvgPrec/test", avg_prec, batch_n)
+        # logger.add_scalar("TP/test", tp, batch_n)
+        # logger.add_scalar("TN/test", tn, batch_n)
+        # logger.add_scalar("FP/test", fp, batch_n)
+        # logger.add_scalar("FN/test", fn, batch_n)
         print("Saving {}".format(args.model_path))
         torch.save(model.state_dict(), args.model_path)
 

@@ -14,6 +14,7 @@ import os
 import random
 import time
 
+from tqdm import tqdm
 from deepsnap.batch import Batch
 import networkx as nx
 import numpy as np
@@ -87,49 +88,55 @@ def train(args, model):
         clf_opt = optim.Adam(model.clf_model.parameters(), lr=args.lr)
 
     done = False
-    while not done:
-        data_source = make_data_source(args)
-        loaders = data_source.gen_data_loaders(args.eval_interval *
-            args.batch_size, args.batch_size, train=True)
-        for batch_target, batch_neg_target, batch_neg_query in zip(*loaders):
-            # msg, _ = in_queue.get()
-            # if msg == "done":
-            #     done = True
-            #     break
-            # train
-            model.train()
-            model.zero_grad()
-            pos_a, pos_b, neg_a, neg_b = data_source.gen_batch(batch_target,
-                batch_neg_target, batch_neg_query, True)
-            emb_pos_a, emb_pos_b = model.emb_model(pos_a), model.emb_model(pos_b)
-            emb_neg_a, emb_neg_b = model.emb_model(neg_a), model.emb_model(neg_b)
-            #print(emb_pos_a.shape, emb_neg_a.shape, emb_neg_b.shape)
-            emb_as = torch.cat((emb_pos_a, emb_neg_a), dim=0)
-            emb_bs = torch.cat((emb_pos_b, emb_neg_b), dim=0)
-            labels = torch.tensor([1]*pos_a.num_graphs + [0]*neg_a.num_graphs).to(
-                utils.get_device())
-            intersect_embs = None
-            pred = model(emb_as, emb_bs)
-            loss = model.criterion(pred, intersect_embs, labels)
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            opt.step()
-            if scheduler:
-                scheduler.step()
+    batch_n = 0
 
-            if args.method_type == "order":
-                with torch.no_grad():
-                    pred = model.predict(pred)
-                model.clf_model.zero_grad()
-                pred = model.clf_model(pred.unsqueeze(1))
-                criterion = nn.NLLLoss()
-                clf_loss = criterion(pred, labels)
-                clf_loss.backward()
-                clf_opt.step()
-            pred = pred.argmax(dim=-1)
-            acc = torch.mean((pred == labels).type(torch.float))
-            train_loss = loss.item()
-            train_acc = acc.item()
+    data_source = make_data_source(args)
+    loaders = data_source.gen_data_loaders(args.eval_interval *
+        args.batch_size, args.batch_size, train=True)
+    for batch_target, batch_neg_target, batch_neg_query in tqdm(zip(*loaders)):
+        # size of loaders is eval_interval=1000
+
+        # msg, _ = in_queue.get()
+        # if msg == "done":
+        #     done = True
+        #     break
+        # train
+        model.train()
+        model.zero_grad()
+        pos_a, pos_b, neg_a, neg_b = data_source.gen_batch(batch_target,
+            batch_neg_target, batch_neg_query, True)
+        emb_pos_a, emb_pos_b = model.emb_model(pos_a), model.emb_model(pos_b)
+        emb_neg_a, emb_neg_b = model.emb_model(neg_a), model.emb_model(neg_b)
+        #print(emb_pos_a.shape, emb_neg_a.shape, emb_neg_b.shape)
+        emb_as = torch.cat((emb_pos_a, emb_neg_a), dim=0)
+        emb_bs = torch.cat((emb_pos_b, emb_neg_b), dim=0)
+        labels = torch.tensor([1]*pos_a.num_graphs + [0]*neg_a.num_graphs).to(
+            utils.get_device())
+        intersect_embs = None
+        pred = model(emb_as, emb_bs)
+        loss = model.criterion(pred, intersect_embs, labels)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        opt.step()
+        if scheduler:
+            scheduler.step()
+
+        if args.method_type == "order":
+            with torch.no_grad():
+                pred = model.predict(pred)
+            model.clf_model.zero_grad()
+            pred = model.clf_model(pred.unsqueeze(1))
+            criterion = nn.NLLLoss()
+            clf_loss = criterion(pred, labels)
+            clf_loss.backward()
+            clf_opt.step()
+        pred = pred.argmax(dim=-1)
+        acc = torch.mean((pred == labels).type(torch.float))
+        train_loss = loss.item()
+        train_acc = acc.item()
+        batch_n+=1
+        print("Batch {}. Loss: {:.4f}. Training acc: {:.4f}".format(
+            batch_n, train_loss, train_acc), end="               \r")
     return train_loss, train_acc
 
             # out_queue.put(("step", (loss.item(), acc)))
@@ -228,7 +235,25 @@ def main(force_test=False):
     else:
         # train_loop(args)
         model = build_model(args)
-        train(args, model)
+        for epoch in range(args.n_batches // args.eval_interval):
+            train(args, model)
+            # make test data
+            data_source = make_data_source(args)
+            loaders = data_source.gen_data_loaders(args.val_size, args.batch_size,
+                                                   train=False, use_distributed_sampling=False)
+            test_pts = []
+            for batch_target, batch_neg_target, batch_neg_query in zip(*loaders):
+                pos_a, pos_b, neg_a, neg_b = data_source.gen_batch(batch_target,
+                                                                   batch_neg_target, batch_neg_query, False)
+                if pos_a:
+                    pos_a = pos_a.to(torch.device("cpu"))
+                    pos_b = pos_b.to(torch.device("cpu"))
+                neg_a = neg_a.to(torch.device("cpu"))
+                neg_b = neg_b.to(torch.device("cpu"))
+                test_pts.append((pos_a, pos_b, neg_a, neg_b))
+            logger=None
+            batch_n=None
+            validation(args, model, test_pts, logger, batch_n, epoch)
 
 if __name__ == '__main__':
     main()
