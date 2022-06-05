@@ -237,6 +237,7 @@ def build_optimizer(args, params):
 
 def batch_nx_graphs(graphs, anchors=None):
     """
+    这个函数到底怎么运行的？
     Args:
         graphs:
         anchors:
