@@ -103,7 +103,11 @@ def train(args, model):
     data_source = make_data_source(args)
     loaders = data_source.gen_data_loaders(args.eval_interval *
                                            args.batch_size, args.batch_size, train=True)
-    for batch_target, batch_neg_target, batch_neg_query in tqdm(zip(*loaders)):
+    for batch_target, batch_neg_target, batch_neg_query in zip(*loaders):
+
+        start = time.perf_counter()
+        # 程序代码段运行
+
         # size of loaders is eval_interval=1000
 
         # msg, _ = in_queue.get()
@@ -144,12 +148,26 @@ def train(args, model):
         acc = torch.mean((pred == labels).type(torch.float))
         train_loss = loss.item()
         train_acc = acc.item()
+        # print("train_loss:",train_loss)
+        end = time.perf_counter()
+        runtime=end - start
+
+        # print(runtime)
+        # print(end - start)
+        # print("\r", "train_loss:",train_loss, end="", flush=True)
         batch_n += 1
-        print("Batch {}. Loss: {:.4f}. Training acc: {:.4f}".format(
-            batch_n, train_loss, train_acc), end="               \r")
+        eta_time = (args.eval_interval - batch_n) * runtime
+        print("Batch {}. Loss: {:.4f}. Training acc: {:.4f} Cost time:{:.4f}s. ETA:{:.4f}s.".format(
+            batch_n, train_loss, train_acc, runtime, eta_time))
+        # print("Batch {}. Loss: {:.4f}. Training acc: {:.4f}".format(
+        #     batch_n, train_loss, train_acc), end="               \r")
+
     return train_loss, train_acc
 
     # out_queue.put(("step", (loss.item(), acc)))
+
+for train_loss in range(9):
+    print("\r", "train_loss:", train_loss, end="", flush=True)
 
 
 def train_loop(args):
@@ -251,6 +269,8 @@ def main(force_test=False):
         except:
             model = build_model(args)
         for epoch in range(args.n_batches // args.eval_interval):
+            start = time.perf_counter()
+
             train(args, model)
             # make test data
             data_source = make_data_source(args)
@@ -269,7 +289,11 @@ def main(force_test=False):
             logger = None
             batch_n = None
             validation(args, model, test_pts, logger, batch_n, epoch)
-
+            end = time.perf_counter()
+            runtime = end - start
+            eta_time= (args.n_batches // args.eval_interval-epoch)*runtime
+            print("Current epoch Cost time:{:.4f}s. Total Training ETA:{:.4f}s.".format(
+                 runtime, eta_time))
 
 if __name__ == '__main__':
     main()
