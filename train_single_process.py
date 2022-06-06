@@ -117,6 +117,7 @@ def train(args, model):
         # train
         model.train()
         model.zero_grad()
+        # pos_a 和 pos_b 分别代表了 target graph 和 query graph， pos 标签代表了 pos b 一定是pos a的subgraph
         pos_a, pos_b, neg_a, neg_b = data_source.gen_batch(batch_target,
                                                            batch_neg_target, batch_neg_query, True)
         emb_pos_a, emb_pos_b = model.emb_model(pos_a), model.emb_model(pos_b)
